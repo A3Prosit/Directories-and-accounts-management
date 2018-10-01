@@ -60,16 +60,16 @@ Comment ? une nouvelle interface simple
 - Utiliser des sous-réseaux
 
 ### Etape 7 : Plan d’action
-o Etudes
-o LDAP
-o SGBD
-o GPO
-o Active directory (avantages, inconvénients)
-o Services
-o Historique des annuaires
-o Equivalents Linux/MAC
-o  Réalisation
-o Workshop
-o Corbeille
 
----------------
+- Etudes
+- LDAP
+- SGBD
+- GPO
+- Active directory (avantages, inconvénients)
+- Services
+- Historique des annuaires
+- Equivalents Linux/MAC
+-  Réalisation
+- Workshop
+- Corbeille
+
