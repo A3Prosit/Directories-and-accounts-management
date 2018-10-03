@@ -1,19 +1,19 @@
 
 ### Etape 1 : Mots clefs :
 
-- Compte utilisateur :
-- Interface unique :
-- Attribution des droits utilisateurs :
-- Serveur de fichier :
-- Verrous :
-- Droits :
-- Poste informatique :
-- Téléphonie IP :
-- Malware récalcitrant :
-- Partage réseau :
-- Contrôler l’ensemble des machines :
-- Serveur intranet :
-- Liste des employés :
+- Compte utilisateur : /
+- Interface unique : /
+- Attribution des droits utilisateurs : /
+- Serveur de fichier : /
+- Verrous : Une persomme, ou un PS accède à une ressource à un instant donné. (Eviter deux en même temps)
+- Droits : / 
+- Poste informatique : /
+- Téléphonie IP : /
+- Malware récalcitrant : Malware qui revient, difficile à retirer
+- Partage réseau : / 
+- Contrôler l’ensemble des machines : /
+- Serveur intranet : Serveur à l'intérieur du réseau
+- Liste des employés : /
 
 ### Etape 2 : Contexte
 
@@ -78,7 +78,7 @@ Comment ? une nouvelle interface simple
 ### Présentation générale : 
 LDAP (Lightweight Directory Access Protocol)
 - Fondé en 1993 par University Of Michigan pour remplacer le DAP (vieux protocole annuaire)
-- Fournit des outils pour **accéder** aux données sur le serveur au niveau du client (connexion, déconnexion, recherches infos, comparaison infos, insérer/modifier/supprimer entrées) càd grande partie authentification.
+- Fournit des outils (protocoles) pour **accéder** aux données sur le serveur au niveau du client (connexion, déconnexion, recherches infos, comparaison infos, insérer/modifier/supprimer entrées) càd grande partie authentification.
 - Protocole standard permettant de gérer des annuaires via TCP IP en respectant les modèles suivants  :
 	- Information : Définir le type d'information
 	- Nommage : Conventions de nommage, organisation, et désignation
@@ -156,7 +156,7 @@ RDN + ajouter des noms relatifs des entrées parentes (càd ascendants hiérarch
 
 ### **Format d'échange de données LDIF** :
 
-Utilisation du LDIF (LDAP Data Interchange Format), permet d'alimenter simplement un annuaire avec des scripts.
+Utilisation du LDIF (LDAP Data Interchange Format), permet d'alimenter (exporter/importer/ajouter) simplement un annuaire avec des scripts.
 - Alimenter un LDAP via SGBD 
 	- Mode de synchro unidirectionnelle (Ne jamais modifier via le LDAP en lui même)
 	- Objets ajoutés dans l'annuaire sans soucis de règles d'accès (s'assurer de la validité)
@@ -180,6 +180,12 @@ Exemple LDIF pour importer  des données :
 	- Pouvoir être utilisé par tout type d'application, être un standard de tout système ou fabricant.
 	- Elle découle en plusieurs sous-standards : X5xx (où xx étant des chiffres) qui régissent modèle, procédures, attributs, classes...
 	- Introduit plusieurs termes techniques comme DUA (Directory User Agent) {...}
+
+## Protocole LDAP
+
+- Communications sur le port 389
+- LDAPS (avec SSL)
+- 
 
 ## 2 - Le SGBD :
 - Utilisé pour la gestion de la données
@@ -224,73 +230,145 @@ A la réception d'une requête, il interroge la bonne source d'information. Il r
 ==> Solution : Découpage de l'information
 - Utilisation de règles simples :
 	- Minimiser le nombre d'infos communes au SGBD et à l'annuaire
-	- Eviter de multiplier les arborescence (Simplifiant ainsi les ACL)
+	- Éviter de multiplier les arborescence (Simplifiant ainsi les ACL)
 	
 
 ## 5 - Active Directory  :
 
-L'Active Directory est un LDAP pour windows par Microsoft.
+L'Active Directory est un LDAP pour windows par Microsoft. 
 - Identification & Authentification dans un S.I
-- Administration centralisée et simplifiée sur un seul logiciel
-- Authentification unifiée (un seul compte pour tout le SI)
+- Administration centralisée et simplifiée 
 - Objets uniques sur le réseau
 - Référencement (exploiter comme une grande base de données)
+- Compatibilité avec les autres annuaires
+- Applications tierces qui prennent en compte ces protocoles peuvent accéder au service
+- Adorer s'appuyer sur le DNS
 
-**I - Structure :**
-- Classes/Objet {Ordinateur} ==> Attributs {PC1=...} --> AD : Classes prédéfinies
-- Certains objets peuvent-être des containers d'autres objets
+## Configurer des postes ?
 
-AD a ses propres classes grâce à un schéma (évolutif)
+L'AD est un LDAP, on retrouvera donc le principe d'objet, avec des noeuds (entrées) {...}.
+Il existe plusieurs moyens de configurer les postes, nous retiendrons le modèle "Domaine", c'est celui qu'adopte l'AD.
+
+- Modèle "Domaine" 
+	- Base utilisateur, de groupes et d'ordinateurs centralisés. Un seul compte pour toutes les machines du domaine
+	- Annuaire contient toutes les infos relatives aux objets
+	- Ouverture de session unique par utilisateur
+	- Chaque contrôleur de domaine contient une copie de l'annuaire (réplication entre contrôleur)
+	- Administration et gestion de la sécurité centralisée".
+
+- "Groupe de travail" ==> Met en relation les machines d'un même groupe de travail (partage fichier...)
+	- Une base utilisateur par machine (SAM), unique, non partagée
+	- Très vite inadapté dès que le nombre de postes augmente (trop lourd)
+	- Création des comptes utilisateurs en nombre, un compte par machine, comptes propres aux machines
+	- Simplicité de mise en oeuvre (no brain, no skill)
+
+
+**DNS & Service Kerberos  :**
+- A la différence du DNS (résolution des noms), l'AD est un service d'annuaire. Il résout et renvoi des enregistrements d'objets.
+- Les zones DNS peuvent-être enregistrés dans l'AD, pour être répliqués vers d'autre contrôleur de domaine AD.
+- Kerberos est un protocole en V5 qui assure authentification avec distribution de tickets (gestion de sessions)
+	- Authentification Service (AS) distribue des tickets (TGT) - Se renouvelle x temps
+	- Le client doit les retourner auprès des (TGS), disposant ensuite d'un TGS (Granting Service)
+	- Ticket TGS composé du nom, mdp, identité, durée...
+	- Les deux tickets contiennent un clé de session qui chiffre les communications
+
+### Structure de l'AD
+
 ![](https://www.it-connect.fr/wp-content-itc/uploads/2015/06/cours-active-directory-2.png)
 
-La base de données de l'AD est divisé en trois partitions de répertoire appelé 'Naming Context' :
+La base de données de l'AD est divisé en trois partitions de répertoire appelé *'Naming Context'* :
 - **Partition de schéma :** Ensemble des définitions des classes et attributs d'objets au sein de l'AD. Elle est unique.
+	- Classes/Objet {Ordinateur} ==> Attributs {PC1=...} --> AD : Classes prédéfinies {Schéma Évolutif}
+	- Certains objets peuvent-être des containers d'autres objets
+	- On appelle GUID l'ID d'un objet unique au sein d'une forêt, ne change jamais.
 - **Partition de configuration :**  Topologie (domaines, site, contrôleurs de domaine). Elle est unique
 - **Partition de domaine :** Informations de tous les objets d'un domaine (ordi, groupe, utilisateur...). Elle est unique au sein d'un domaine. Il y en a donc le même nombre que de domaines.
-- 
-**II - Contrôleur de domaine & domaine**
 
-I - Groupe de travail au domaine : 
-Il existe plusieurs moyens de configurer les postes pour rejoindre le domaine :  
+### Principe du contrôleur de domaine
 
-A - Modèle "Groupe de travail" ==> Met en relation les machines d'un même groupe de travail (partage fichier...)
-- Une base utilisateur par machine (SAM), unique, non partagée
-- Très vite inadapté dès que le nombre de postes augmente (trop lourd)
-- Création des comptes utilisateurs en nombre, un compte par machine, comptes propres aux machines
-- Simplicité de mise en oeuvre (no brain, no skill)
-
-B - Modèle "Domaine" 
-- Base utilisateur, de groupes et d'ordinateurs centralisés. Un seul compte pour toutes les machines du domaine
-- Annuaire contient toutes les infos relatives aux objets
-- Ouverture de session unique par utilisateur
-- Chaque contrôleur de domaine contient une copie de l'annuaire (réplication entre contrôleur)
-- Administration et gestion de la sécurité centralisée
-
-II - Les contrôleur de domaine :
-
-Lors de la création de domaine -> serveur utilisé --> "Controleur de domaine"
-- Coeur des requêtes
+Lors de la création de domaine -> serveur utilisé --> "Contrôleur de domaine"
+- Cœur des requêtes
 - Identification des objets
 - Traiter les demandes d'authentification
-- On retrouve une copie de la BDD dans le fichier "NTDS.dit" (Très important)
+- On retrouve une copie de la BDD dans le fichier **"NTDS.dit"** (Très important)
 - Important d'en avoir 2, pour assurer une pérennité en cas plantage
 - DFSR (Distributed FIle System Replication) ==> Copie + Dossier **SYSVOL** pour distribuer les stratégie de groupe & de connexion
+	- Sert à stocker des données spécifiques qui doivent-être répliqués entre contrôleur, ou accéssible par ordi client.
+	- Scripts de connexions
+	- Stratégie de groupe (GPO)
+	- c\Windows\SYSVOL
+	- Ecris en BATCH
+	- Dupliqué pour appliquer partout
+	- Dossier "Policies" dans "Domain" 
 
-**III Domaine, arbre, forêt**
+- LE PREMIER QUE L'ON CREE EST : 
+- **Premier contrôleur de domaine** = "Serveur catalogue global", c'est un maître d’opération
+	- Va contenir le catalogue global (cf : Arbre & forêt)
+	- Seul un maître d'opération peut accepter certaines modifications
+	- 5 rôles :
+		- ADDS (Active Directory Domain Services) : Rôle principal de l'AD, annuaires, utilisateurs, ordinateurs, groupes...
+		- ADCS (Active Directory Certificate Services) : Couche supplémentaire au SI, crée des clés et des certificats, pour la sécurité
+		- ADFS (Active Directory Federation Services) : Intégration du SSO (Authentification unique), avec tokens
+		- ADRMS (Active Directory Rights Management Services) : Dans l'OS, Autorisations sur fichiers users, c'est une application client/server.
+		- ADLDS (Active Directory Lightweight Directory Services) : Comme ADDS, mais n'implique pas la création d'un domaine. Utilisé pour magasin d'authentification avec base user (Comme prestataire externe)
+
+- Il disposera de 5 rôles FSMO, qu'on peut re-distribuer entre contrôleurs
+		- Contrôleur de schéma (MAJ...)
+		- Affectation de nom de domaine (add/supp domaines)
+		- RID (Attribuer un Secure ID lors de connexion)
+		- Emulateur PDC (Traite échange password, mauvais password...)
+		- Infrastructure (MAJ références croisés de domaines, déplacement objet, références noms entre contrôleur...)
+		- 
+###  Principe de l'arbre et de la forêt
+ 
+![](http://image.noelshack.com/fichiers/2018/40/3/1538566758-43146479-274483406526460-2572044313420627968-n.jpg)
 
 ![](https://www.it-connect.fr/wp-content-itc/uploads/2015/06/cours-active-directory-7.png)
 
-Ici, on a un domaine, et deux sous-domaines (domaines enfants). On peut appeller ça un arbre.
-Un ensemble d'arbre, est appelé une forêt. 
-
 ![](https://www.it-connect.fr/wp-content-itc/uploads/2015/06/cours-active-directory-9.png)
 
-Les deux forêts ne partagent pas le même nom, ni la même structure. 
-- Tous les arbres d'une forêt partagent un schéma **d'annuaire commun**
-- Tous les forêts partagent un "catalogue global"
+Ici, on a un domaine, et deux sous-domaines (domaines enfants). On peut appeler ça un arbre.
+- Si l'on vient greffer un arbre à un autre arbre, on appelle ça une forêt.
+
+Les deux arbres ne partagent pas le même nom, ni la même structure : 
+- Tous les arbres partagent un **"catalogue global"** (du premier contrôleur de domaine)
+	- C'est une BDD conservée sur un ou plusieurs contrôleurs de domaines
+	- Contient la liste de tous les objets dans une forêt d'un AD
+	- Crée automatiquement sur le premier contrôleur
+	- Valide les références objets dans une forêt
+	- Peut contacter les autres contrôleur pour récupérer les infos du user qui essaye de se connecter sur un autre domaine
+	- On peut en affecter sur chaque contrôleur que l'on souhaite
+	- Permet de gagner du temps pour les recherches (pas besoin de parcourir tous les domaines)
+	- Chaque forêt doit en avoir un, répond aux requêtes sans impacter le réseau
+	- A mettre sur chaque site également
+	- Permet de terminer le processus d'authentification de session (détermine le groupe)
+	- Permet d'ouvrir une session en déterminant leur groupe
+	- Il est conseillé d'avoir deux contrôleurs en catalogue global
 - Les domaines fonctionnent indépendamment, mais la forêt facilite les communications entre les domaines.
 - Simplification de l'administration et flexibilité. paris, peut accéder à rennes si les autorisations se permettent.
 
+**Principe de portée de groupe**
+
+- Domaine local : le groupe reste dans le domaine où il est crée
+- Globale : Local + approuvé par le domaine de base. Pourra contenir d'autres objets du domaine,contrôler l'accès à ses ressources
+- Universel : Accessible à l'ensemble de la forêt
+
+![]( https://www.it-connect.fr/wp-content-itc/uploads/2015/06/cours-active-directory-15.png)
+
+Ici : 
+- _Comptabilité_ : étendue « domaine local » sur « paris.it-connect.local »  
+- _Direction_ : étendue « globale » sur « learn-online.local » qui approuve tous les sous-domaines  
+- _Informatique_ : étendue « universelle » sur la forêt
+
+On retrouve aussi :
+- Groupe sécurité : Donner des autorisations aux ressources, contrôle accès
+- Distribution : Liste d'@email en ajoutant des contacts (diffusion, ex : messagerie)
+- Intégrés : Par défaut (Admin...) ⇒ 'Built-in'
+
+**Relations d'approbations** : Lien entre deux AD ou deux forets AD. ça peut être unidirectionnelle ou bi-directionelle (Principe de la transitivité)
+
+
+### Annexes : 
 
 **Le niveau fonctionnel :**
 A la création d'un domaine, il correspond à la version de l'OS. (Ex : Windows Server 2012).
@@ -300,7 +378,50 @@ A la création d'un domaine, il correspond à la version de l'OS. (Ex : Windows 
 - Impossible de passer à un niveau inférieur
 - Il en existe sur le domaine, et sur la forêt. La forêt est le plus critique, car il doit correspondre au minimum de l'ensemble des domaines.
 
-ARCHITECTURE DE L'AD
+**Pour de l'AD** 
+- Intégration avec DNS
+- Flexibilité des requêtes (recherches)
+- Capacité d'extension (Ajouter classes objets / Attributs)
+- Administration par stratégie de groupe (GPO : Acès aux objets d'annuaire, et aux ressource de domaine)
+- Adaptabilité (Un à plusieurs contrôleur, ce qui permet d'adapter l'architecture réseau, arbres / forêt)
+- Réplication d'information (Tolérance de panne - réplication de l'annuaire entre contrôleur)
+- Sécurité des informations (Centralisation de l'authentification, stratégie de sécurité)
+- Intéropérabilité (S'appuie sur le LDAP et ses protocoles, donc peut fonctionner avec d'autres comme ADSI)
+
+**Contre de l'AD**
+- Révelation des mots de passes windows depuis la mémoire (2011) #Failles générales
+- Si le serveur AD indisponible, les comptes ne peuvent pas être authentifiés 
+- Sécurité assurée par l'admin AD et non l'admin du groupe PS Series
 
 
+## 6 - Politique de sécurité :
+
+GPO : Group Policy Object
+- Configurer les ordis et les paramètres utilisateurs facilement basé sur l'AD
+- Le réseau doit-être basé sur l'Active Directory Domain Services (pour centraliser la sécurité)
+- Les ordinateurs doivent-être sur le domaine 
+
+**Utiliser GMPC, ou GPO depuis Windows Server :**
+- Installer des sécurités sur un compte
+- Installer des sécurités sur les domaines
+- Installer des sécurités sur les utilisateurs du domaine
+- Manage les GPOs avec GPMC et éditer avec le GPME
+**Sécu**
+- Créer des organisation dans les domaines (Ou), qui ont des enfants, ce qui permet d'appliquer les droits que si on les lies. (Domaines, users...)
+-  Les droits héritent automatiquement du père (écrasant les paramètres des fils)
+- Si on a deux droits, on peut changer la priorité (Link order) : Qui s'exécute en premier
+- On a un dossier/fichier qui contient les paramètres à appliquer à un utilisateurs ou à un ordinateurs
+	- Polices : Règles de police qui paramètre les GPO
+	- Préférences : On peut déterminer des applications spécifiques, caractéristiques de windows, administrer {...]
+- Les règles se rafraîchisse par défaut toutes les 90 minutes, ou redémarrer le PC. (On peut le changer)
+
+
+## Historique des annuaires
+- Nécessité de gérer association DNS/IP + nécessité répartition responsabilité des domaines
+- x500 --> Interconnecter tous les équipements, définissant le protocole de communication
+- LDAP : Protocole plus souple, ne définit que l'échange entre les applications et les annuaires
+## Équivalents Linux / Mac
+- CentOS --> Grande distribution Linux
+- OSx --> Mac
+## Corbeille d'exo
 
