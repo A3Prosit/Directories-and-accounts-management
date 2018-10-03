@@ -95,18 +95,6 @@ LDAP (Lightweight Directory Access Protocol)
 	- Considéré comme un protocole réseau 
 	- Pas de contrôle de cohérence
 
-- Très bonnes performances en consultation
-- **Lecture privilégiés** au détriment du maintien de la cohérence de l'information
-- Impose de spécifier un chemin d'accès aux données en navigant (à cause langage "navigationel")
-- Aucune indépendance entre les programmes qui accèdent aux données et la structure de l'arbre
-	- /!\ Toute modification dans la structure doit-être répercutée sur les programmes
-- Pour chaque composante qu'une personne essaye d'accéder, il faut lui associer une entrée (duplicats)
-	- Ces duplicats alourdissent la gestion des droits des users et multiplie les risques d'erreurs 
-		- ==> Penser à modifier l'info partout où elle apparaît 
-- Plus rapide qu'un SGBD
-	- Considéré comme un protocole réseau 
-	- Pas de contrôle de cohérence
-
 ### Structure & Nommage
 - Hiérarchique en arbre [DIT] (Directory Information Tree) :
 	-  La racine est le point d'entrée de l'annuaire, contenant le suffixe
@@ -322,7 +310,7 @@ Lors de la création de domaine -> serveur utilisé --> "Contrôleur de domaine"
 ###  Principe de l'arbre et de la forêt
  
 ![](http://image.noelshack.com/fichiers/2018/40/3/1538566758-43146479-274483406526460-2572044313420627968-n.jpg)
-
+/!\ - Chaque domaine est un arbre. (!sous domaine)
 ![](https://www.it-connect.fr/wp-content-itc/uploads/2015/06/cours-active-directory-7.png)
 
 ![](https://www.it-connect.fr/wp-content-itc/uploads/2015/06/cours-active-directory-9.png)
@@ -424,4 +412,9 @@ GPO : Group Policy Object
 - CentOS --> Grande distribution Linux
 - OSx --> Mac
 ## Corbeille d'exo
+- **LDAP** : 389
+- **LDAPS** : 636
+- **Base LDAP** : /var/lib/ldap/
+- **Configuration LDAP :** /etc/ldap/slapd.d/
+{...}
 
